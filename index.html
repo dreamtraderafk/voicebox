@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voicebox – free text to speech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e8edf2; --panel:#ffffff; --ink:#141b24; --mute:#5d6b7a; --line:#cfd8e1;
+  --acc:#2b3cff; --acc-ink:#ffffff; --warn:#b3261e;
+  font-family:'Schibsted Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#10151c; --panel:#18202a; --ink:#e9eef4; --mute:#93a1b1; --line:#2a3542; --acc:#8d97ff; --acc-ink:#0d1220; --warn:#ff8a80;}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);line-height:1.45}
+main{max-width:720px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:clamp(1.9rem,6vw,2.7rem);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:0 0 18px}
+
+textarea{
+  width:100%;min-height:160px;resize:vertical;padding:16px 18px;
+  font:inherit;font-size:1.15rem;color:var(--ink);background:var(--panel);
+  border:2px solid var(--line);border-radius:18px;outline:none;
+}
+textarea:focus{border-color:var(--acc)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 6px;flex-wrap:wrap}
+#picked{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#picked small{font-weight:400;color:var(--mute)}
+.actions{display:flex;gap:8px;margin-left:auto}
+button{font:inherit;cursor:pointer}
+button:focus-visible,.row:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.primary{background:var(--acc);color:var(--acc-ink);border:0;border-radius:999px;padding:12px 26px;font-weight:600;font-size:1.05rem}
+.primary:disabled{opacity:.55;cursor:progress}
+.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:10px 18px;font-weight:600}
+kbd{font:inherit;font-size:.75rem;opacity:.75;margin-left:8px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
+@media (hover:none){kbd{display:none}}
+
+#status{min-height:1.4em;color:var(--mute);font-size:.95rem}
+#status.err{color:var(--warn)}
+
+#out{display:flex;align-items:center;gap:12px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0 4px}
+#out[hidden]{display:none}
+#out audio{flex:1;min-width:0;height:40px}
+#dl{color:var(--acc);font-weight:600;text-decoration:none;white-space:nowrap}
+
+.filters{display:flex;gap:8px;align-items:center;margin:26px 0 10px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;overflow-x:auto;flex:1;padding-bottom:2px}
+.chip{background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:6px 14px;white-space:nowrap;font-weight:600;font-size:.95rem}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[hidden]{display:none}
+select{font:inherit;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:7px 10px;max-width:100%}
+
+#list{background:var(--panel);border:2px solid var(--line);border-radius:14px;overflow:hidden;max-height:60vh;overflow-y:auto}
+.row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.row:last-child{border-bottom:0}
+.row:hover{background:color-mix(in srgb,var(--acc) 8%,transparent)}
+.row.sel,.row.sel:hover{background:var(--acc);color:var(--acc-ink)}
+.play{flex:none;width:40px;height:40px;border-radius:50%;border:2px solid currentColor;background:transparent;color:inherit;font-size:.95rem;line-height:1;padding:0}
+.who{flex:1;min-width:0}
+.who b{display:block;font-weight:600}
+.who span{display:block;font-size:.88rem;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-style:normal;font-size:.78rem;font-weight:600;border:1.5px solid currentColor;border-radius:6px;padding:1px 7px;opacity:.75}
+.bars{display:none;align-items:flex-end;gap:3px;height:20px}
+.bars i{width:3px;background:currentColor;border-radius:2px;height:30%;animation:bar .7s ease-in-out infinite alternate}
+.bars i:nth-child(2){animation-delay:.15s}.bars i:nth-child(3){animation-delay:.3s}.bars i:nth-child(4){animation-delay:.45s}
+.row.playing .bars{display:flex}
+@keyframes bar{to{height:100%}}
+@media (prefers-reduced-motion:reduce){.bars i{animation:none;height:70%}}
+.empty{padding:24px;color:var(--mute);margin:0}
+</style>
+</head>
+<body>
+<main>
+  <h1>Type. Pick a voice. Press Enter.</h1>
+
+  <textarea id="text" autofocus placeholder="Write anything here. Enter generates, Shift+Enter starts a new line."></textarea>
+
+  <div class="bar">
+    <div id="picked">No voice picked</div>
+    <div class="actions">
+      <button id="stop" class="ghost" hidden>Stop</button>
+      <button id="go" class="primary">Generate<kbd>Enter</kbd></button>
+    </div>
+  </div>
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <div id="out" hidden>
+    <audio id="player" controls></audio>
+    <a id="dl" download="voice.wav">Download</a>
+  </div>
+
+  <div class="filters">
+    <div class="chips" id="chips">
+      <button class="chip" data-engine="all" aria-pressed="true">All voices</button>
+      <button class="chip" data-engine="kokoro" aria-pressed="false">Kokoro</button>
+      <button class="chip" data-engine="piper" aria-pressed="false">Piper</button>
+      <button class="chip" data-engine="browser" aria-pressed="false">This device</button>
+    </div>
+    <select id="lang" aria-label="Language"></select>
+  </div>
+
+  <div id="list" role="listbox" aria-label="Voices"></div>
+</main>
+
+<script type="module">
+const $ = s => document.querySelector(s);
+const SAMPLE = "Hello! This is how I sound. Would you like to use this voice?";
+const ENGINE_LABEL = { kokoro: 'Kokoro', piper: 'Piper', browser: 'Device' };
+const ENGINE_ORDER = { kokoro: 0, piper: 1, browser: 2 };
+const state = { voices: [], engine: 'all', lang: 'all', picked: null, playing: null };
+const rows = new Map();
+const sampleCache = new Map();
+let current = null;
+
+const LANG = new Intl.DisplayNames(['en'], { type: 'language' });
+const langName = c => { try { return LANG.of(c.replace('_', '-')); } catch { return c; } };
+const setStatus = (msg, err = false) => { const s = $('#status'); s.textContent = msg; s.className = err ? 'err' : ''; };
+const tick = () => new Promise(r => setTimeout(r, 30));
+
+/* ---------- helpers ---------- */
+function splitText(t, max = 260) {
+  const sents = t.replace(/\s+/g, ' ').trim().match(/[^.!?।]+[.!?।]*\s*/g) || [t];
+  const out = []; let cur = '';
+  for (let s of sents) {
+    while (s.length > max) {
+      let i = s.lastIndexOf(' ', max); if (i < 1) i = max;
+      if (cur) { out.push(cur.trim()); cur = ''; }
+      out.push(s.slice(0, i).trim()); s = s.slice(i);
+    }
+    if ((cur + s).length > max && cur) { out.push(cur.trim()); cur = ''; }
+    cur += s;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out.filter(Boolean);
+}
+
+function wavBlob(parts, sr) {
+  const n = parts.reduce((s, p) => s + p.length, 0);
+  const buf = new ArrayBuffer(44 + n * 2), dv = new DataView(buf);
+  const w = (o, s) => [...s].forEach((c, i) => dv.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+  dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+  w(36, 'data'); dv.setUint32(40, n * 2, true);
+  let o = 44;
+  for (const p of parts) for (let i = 0; i < p.length; i++) {
+    const s = Math.max(-1, Math.min(1, p[i]));
+    dv.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); o += 2;
+  }
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
+function playUrl(url) {
+  return new Promise((res, rej) => {
+    const a = new Audio(url); current = a;
+    a.onended = res;
+    a.onerror = () => rej(new Error('Could not play audio'));
+    a.play().catch(rej);
+  });
+}
+
+/* ---------- engines ---------- */
+const engines = {
+  kokoro: {
+    tts: null, pending: null,
+    voices() {
+      const ids = {
+        af: ['heart','alloy','aoede','bella','jessica','kore','nicole','nova','river','sarah','sky'],
+        am: ['adam','echo','eric','fenrir','liam','michael','onyx','puck','santa'],
+        bf: ['alice','emma','isabella','lily'],
+        bm: ['daniel','fable','george','lewis'],
+      };
+      const out = [];
+      for (const [p, names] of Object.entries(ids)) for (const n of names) out.push({
+        id: `kokoro:${p}_${n}`, engine: 'kokoro', native: `${p}_${n}`,
+        name: n[0].toUpperCase() + n.slice(1),
+        lang: p[0] === 'a' ? 'en-US' : 'en-GB', extra: p[1] === 'f' ? 'Female' : 'Male',
+      });
+      return out;
+    },
+    load() {
+      this.pending ??= (async () => {
+        setStatus('Loading Kokoro. First time downloads about 90 MB, then it is cached.');
+        const { KokoroTTS } = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1/+esm');
+        this.tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+          dtype: 'q8', device: 'wasm',
+          progress_callback: p => {
+            if (p.status === 'progress' && p.total > 5e6) setStatus(`Downloading Kokoro model… ${Math.round(p.progress)}%`);
+          },
+        });
+        setStatus('');
+        return this.tts;
+      })().catch(e => { this.pending = null; throw e; });
+      return this.pending;
+    },
+    async generate(text, v, progress) {
+      const tts = await this.load();
+      const chunks = splitText(text, 260), parts = []; let sr = 24000;
+      for (let i = 0; i < chunks.length; i++) {
+        progress?.(i + 1, chunks.length);
+        await tick();
+        const a = await tts.generate(chunks[i], { voice: v.native });
+        parts.push(a.audio); sr = a.sampling_rate;
+      }
+      return wavBlob(parts, sr);
+    },
+  },
+
+  piper: {
+    mod: null,
+    async load() {
+      this.mod ??= await import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web/+esm');
+      return this.mod;
+    },
+    async voices() {
+      const m = await this.load();
+      const raw = await m.voices();
+      const arr = Array.isArray(raw) ? raw : Object.values(raw);
+      return arr
+        .filter(v => !v.quality || ['medium', 'high'].includes(v.quality))
+        .map(v => {
+          const l = v.language || {};
+          return {
+            id: `piper:${v.key}`, engine: 'piper', native: v.key,
+            name: v.name[0].toUpperCase() + v.name.slice(1),
+            lang: (l.code || 'en_US').replace('_', '-'),
+            extra: v.quality,
+            sampleUrl: `https://huggingface.co/rhasspy/piper-voices/resolve/main/${l.family}/${l.code}/${v.name}/${v.quality}/samples/speaker_0.mp3`,
+          };
+        });
+    },
+    async generate(text, v) {
+      const m = await this.load();
+      setStatus('Downloading this Piper voice (first time only)…');
+      const out = await m.predict({ text, voiceId: v.native });
+      setStatus('');
+      return out instanceof Blob ? out : new Blob([out], { type: 'audio/wav' });
+    },
+  },
+
+  browser: {
+    stopFlag: false,
+    voices() {
+      if (!('speechSynthesis' in window)) return [];
+      const nat = v => /natural|neural|online|google/i.test(v.name);
+      return speechSynthesis.getVoices()
+        .sort((a, b) => nat(b) - nat(a))
+        .map(v => ({
+          id: `browser:${v.voiceURI}`, engine: 'browser', native: v, name: v.name,
+          lang: v.lang.replace('_', '-'), extra: v.localService ? 'offline' : 'online',
+        }));
+    },
+    speak(text, v) {
+      return new Promise((res, rej) => {
+        const u = new SpeechSynthesisUtterance(text);
+        u.voice = v.native; u.lang = v.native.lang;
+        u.onend = res;
+        u.onerror = e => (e.error === 'interrupted' || e.error === 'canceled') ? res() : rej(new Error(e.error));
+        speechSynthesis.speak(u);
+      });
+    },
+    async say(text, v) {
+      this.stopFlag = false;
+      for (const c of splitText(text, 200)) { if (this.stopFlag) break; await this.speak(c, v); }
+    },
+  },
+};
+
+/* ---------- voice list ---------- */
+function setVoices(engine, list) {
+  state.voices = state.voices.filter(v => v.engine !== engine).concat(list)
+    .sort((a, b) => ENGINE_ORDER[a.engine] - ENGINE_ORDER[b.engine]);
+  if (!state.picked) pick(state.voices.find(v => v.id === 'kokoro:af_heart') || state.voices[0]);
+  render();
+}
+
+function render() {
+  const byEngine = state.voices.filter(v => state.engine === 'all' || v.engine === state.engine);
+  const fams = [...new Set(byEngine.map(v => v.lang.split('-')[0]))].sort((a, b) => langName(a).localeCompare(langName(b)));
+  if (state.lang !== 'all' && !fams.includes(state.lang)) state.lang = 'all';
+  const sel = $('#lang');
+  sel.replaceChildren(new Option('All languages', 'all'), ...fams.map(f => new Option(langName(f), f)));
+  sel.value = state.lang;
+
+  const shown = byEngine.filter(v => state.lang === 'all' || v.lang.split('-')[0] === state.lang);
+  const list = $('#list'); list.replaceChildren(); rows.clear();
+  if (!shown.length) {
+    const p = document.createElement('p'); p.className = 'empty';
+    p.textContent = 'No voices here yet. Try another language or engine.';
+    list.append(p);
+  }
+  for (const v of shown) {
+    const row = document.createElement('div');
+    row.className = 'row'; row.tabIndex = 0; row.setAttribute('role', 'option');
+    row.innerHTML = '<button class="play" aria-label="Play sample">▶</button><div class="who"><b></b><span></span></div><div class="bars"><i></i><i></i><i></i><i></i></div><em class="tag"></em>';
+    row.querySelector('b').textContent = v.name;
+    row.querySelector('span').textContent = [langName(v.lang), v.extra].filter(Boolean).join(', ');
+    row.querySelector('.tag').textContent = ENGINE_LABEL[v.engine];
+    row.querySelector('.play').addEventListener('click', e => { e.stopPropagation(); pick(v); sample(v); });
+    row.addEventListener('click', () => pick(v));
+    row.addEventListener('keydown', e => { if (e.key === ' ') { e.preventDefault(); pick(v); sample(v); } });
+    rows.set(v.id, row); list.append(row);
+  }
+  paintRows();
+}
+
+function pick(v) {
+  state.picked = v; if (!v) return;
+  $('#picked').replaceChildren(document.createTextNode(v.name + ' '), Object.assign(document.createElement('small'), { textContent: ENGINE_LABEL[v.engine] }));
+  paintRows();
+}
+
+function paintRows() {
+  for (const [id, row] of rows) row.classList.toggle('sel', state.picked?.id === id);
+}
+
+function mark(id, mode) {
+  const row = rows.get(id); if (!row) return;
+  row.classList.toggle('playing', mode === 'playing');
+  row.querySelector('.play').textContent = mode === 'loading' ? '…' : mode === 'playing' ? '■' : '▶';
+}
+
+/* ---------- actions ---------- */
+function stopAll() {
+  engines.browser.stopFlag = true;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (current) { const a = current; current = null; a.pause(); a.dispatchEvent(new Event('ended')); }
+  if (state.playing) { mark(state.playing, ''); state.playing = null; }
+}
+
+async function sample(v) {
+  const wasSame = state.playing === v.id;
+  stopAll();
+  if (wasSame) return;
+  $('#player').pause();
+  state.playing = v.id; mark(v.id, 'loading');
+  const alive = () => state.playing === v.id;
+  try {
+    if (v.engine === 'browser') {
+      mark(v.id, 'playing'); await engines.browser.say(SAMPLE, v);
+    } else {
+      let url = sampleCache.get(v.id);
+      if (!url && v.sampleUrl) {
+        try { mark(v.id, 'playing'); await playUrl(v.sampleUrl); return; }
+        catch { if (!alive()) return; mark(v.id, 'loading'); }
+      }
+      if (!url) {
+        const blob = await engines[v.engine].generate(SAMPLE, v);
+        url = URL.createObjectURL(blob); sampleCache.set(v.id, url);
+        setStatus('');
+      }
+      if (!alive()) return;
+      mark(v.id, 'playing'); await playUrl(url);
+    }
+  } catch (e) {
+    setStatus(`Sample failed: ${e.message}`, true);
+  } finally {
+    if (alive()) { mark(v.id, ''); state.playing = null; }
+  }
+}
+
+let busy = false, outUrl = null;
+async function generate() {
+  if (busy) return;
+  const text = $('#text').value.trim();
+  const v = state.picked;
+  if (!text) return setStatus('Type something first.', true);
+  if (!v) return setStatus('Pick a voice first.', true);
+  stopAll(); $('#player').pause();
+  busy = true; $('#go').disabled = true; $('#stop').hidden = v.engine !== 'browser';
+  try {
+    if (v.engine === 'browser') {
+      setStatus('Speaking. Device voices play live and cannot be saved as a file.');
+      await engines.browser.say(text, v);
+      setStatus('');
+    } else {
+      setStatus('Generating…');
+      const blob = await engines[v.engine].generate(text, v, (i, n) => setStatus(n > 1 ? `Generating part ${i} of ${n}…` : 'Generating…'));
+      if (outUrl) URL.revokeObjectURL(outUrl);
+      outUrl = URL.createObjectURL(blob);
+      $('#player').src = outUrl; $('#dl').href = outUrl; $('#out').hidden = false;
+      setStatus('');
+      $('#player').play().catch(() => {});
+    }
+  } catch (e) {
+    setStatus(`Failed: ${e.message}`, true);
+  } finally {
+    busy = false; $('#go').disabled = false; $('#stop').hidden = true;
+  }
+}
+
+$('#go').addEventListener('click', generate);
+$('#stop').addEventListener('click', () => { stopAll(); setStatus(''); });
+$('#text').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); generate(); }
+});
+$('#chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  state.engine = b.dataset.engine;
+  document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+  render();
+});
+$('#lang').addEventListener('change', e => { state.lang = e.target.value; render(); });
+
+/* ---------- boot ---------- */
+setVoices('kokoro', engines.kokoro.voices());
+if ('speechSynthesis' in window) {
+  const loadDevice = () => setVoices('browser', engines.browser.voices());
+  loadDevice(); speechSynthesis.onvoiceschanged = loadDevice;
+} else {
+  document.querySelector('[data-engine=browser]').hidden = true;
+}
+engines.piper.voices()
+  .then(list => setVoices('piper', list))
+  .catch(e => { console.warn('Piper unavailable', e); document.querySelector('[data-engine=piper]').hidden = true; });
+</script>
+</body>
+</html>
