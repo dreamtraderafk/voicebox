@@ -16,13 +16,14 @@
   :root{--bg:#10151c; --panel:#18202a; --ink:#e9eef4; --mute:#93a1b1; --line:#2a3542; --acc:#8d97ff; --acc-ink:#0d1220; --warn:#ff8a80;}
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);line-height:1.45}
 main{max-width:720px;margin:0 auto;padding:28px 16px 80px}
 h1{font-size:clamp(1.9rem,6vw,2.7rem);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:0 0 18px}
 
 textarea{
-  width:100%;min-height:160px;resize:vertical;padding:16px 18px;
+  width:100%;min-height:150px;resize:vertical;padding:16px 18px;
   font:inherit;font-size:1.15rem;color:var(--ink);background:var(--panel);
   border:2px solid var(--line);border-radius:18px;outline:none;
 }
@@ -32,48 +33,64 @@ textarea:focus{border-color:var(--acc)}
 #picked small{font-weight:400;color:var(--mute)}
 .actions{display:flex;gap:8px;margin-left:auto}
 button{font:inherit;cursor:pointer}
-button:focus-visible,.row:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button:focus-visible,.row:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .primary{background:var(--acc);color:var(--acc-ink);border:0;border-radius:999px;padding:12px 26px;font-weight:600;font-size:1.05rem}
 .primary:disabled{opacity:.55;cursor:progress}
 .ghost{background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:10px 18px;font-weight:600}
 kbd{font:inherit;font-size:.75rem;opacity:.75;margin-left:8px;border:1px solid currentColor;border-radius:5px;padding:0 5px}
 @media (hover:none){kbd{display:none}}
 
+#tune{display:flex;gap:18px;flex-wrap:wrap;align-items:center;padding:6px 2px;color:var(--mute);font-size:.95rem}
+#tune label{display:flex;align-items:center;gap:8px}
+#tune input[type=range]{width:150px;accent-color:var(--acc)}
+#tune output{min-width:3ch;color:var(--ink);font-weight:600}
+#fixed{margin:0}
+
 #status{min-height:1.4em;color:var(--mute);font-size:.95rem}
 #status.err{color:var(--warn)}
 
 #out{display:flex;align-items:center;gap:12px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0 4px}
-#out[hidden]{display:none}
 #out audio{flex:1;min-width:0;height:40px}
 #dl{color:var(--acc);font-weight:600;text-decoration:none;white-space:nowrap}
 
-.filters{display:flex;gap:8px;align-items:center;margin:26px 0 10px;flex-wrap:wrap}
+#model{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin:22px 0 0}
+#model .txt{flex:1;min-width:200px}
+#model b{display:block}
+#m-note{color:var(--mute);font-size:.9rem}
+#model.flash{border-color:var(--acc);box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 25%,transparent)}
+.prog{flex-basis:100%;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
+.prog.indet i{width:35%;animation:slide 1s ease-in-out infinite alternate}
+@keyframes slide{to{transform:translateX(185%)}}
+
+.filters{display:flex;gap:8px;align-items:center;margin:18px 0 10px;flex-wrap:wrap}
 .chips{display:flex;gap:6px;overflow-x:auto;flex:1;padding-bottom:2px}
 .chip{background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:6px 14px;white-space:nowrap;font-weight:600;font-size:.95rem}
 .chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.chip[hidden]{display:none}
 select{font:inherit;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:7px 10px;max-width:100%}
 
-#list{background:var(--panel);border:2px solid var(--line);border-radius:14px;overflow:hidden;max-height:60vh;overflow-y:auto}
+#list{background:var(--panel);border:2px solid var(--line);border-radius:14px;overflow:hidden}
 .row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
 .row:last-child{border-bottom:0}
 .row:hover{background:color-mix(in srgb,var(--acc) 8%,transparent)}
 .row.sel,.row.sel:hover{background:var(--acc);color:var(--acc-ink)}
 .play{flex:none;width:40px;height:40px;border-radius:50%;border:2px solid currentColor;background:transparent;color:inherit;font-size:.95rem;line-height:1;padding:0}
+body:not([data-kokoro=ready]) .row[data-engine=kokoro] .play{opacity:.4}
 .who{flex:1;min-width:0}
 .who b{display:block;font-weight:600}
 .who span{display:block;font-size:.88rem;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.get{flex:none;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:8px;padding:3px 10px;font-size:.85rem;font-weight:600}
 .tag{font-style:normal;font-size:.78rem;font-weight:600;border:1.5px solid currentColor;border-radius:6px;padding:1px 7px;opacity:.75}
 .bars{display:none;align-items:flex-end;gap:3px;height:20px}
 .bars i{width:3px;background:currentColor;border-radius:2px;height:30%;animation:bar .7s ease-in-out infinite alternate}
 .bars i:nth-child(2){animation-delay:.15s}.bars i:nth-child(3){animation-delay:.3s}.bars i:nth-child(4){animation-delay:.45s}
 .row.playing .bars{display:flex}
 @keyframes bar{to{height:100%}}
-@media (prefers-reduced-motion:reduce){.bars i{animation:none;height:70%}}
+@media (prefers-reduced-motion:reduce){.bars i,.prog.indet i{animation:none}.bars i{height:70%}}
 .empty{padding:24px;color:var(--mute);margin:0}
 </style>
 </head>
-<body>
+<body data-kokoro="idle">
 <main>
   <h1>Type. Pick a voice. Press Enter.</h1>
 
@@ -82,10 +99,23 @@ select{font:inherit;background:var(--panel);color:var(--ink);border:2px solid va
   <div class="bar">
     <div id="picked">No voice picked</div>
     <div class="actions">
-      <button id="stop" class="ghost" hidden>Stop</button>
+      <button id="stop" class="ghost" hidden>Cancel</button>
       <button id="go" class="primary">Generate<kbd>Enter</kbd></button>
     </div>
   </div>
+
+  <div id="tune" hidden>
+    <label id="speedBox">Speed
+      <input type="range" id="speed" min="0.6" max="1.5" step="0.05" value="1">
+      <output id="speedOut">1.0×</output>
+    </label>
+    <label id="pitchBox">Pitch
+      <input type="range" id="pitch" min="0.5" max="1.5" step="0.05" value="1">
+      <output id="pitchOut">1.0</output>
+    </label>
+    <p id="fixed">This voice has a fixed style.</p>
+  </div>
+
   <div id="status" role="status" aria-live="polite"></div>
 
   <div id="out" hidden>
@@ -93,9 +123,15 @@ select{font:inherit;background:var(--panel);color:var(--ink);border:2px solid va
     <a id="dl" download="voice.wav">Download</a>
   </div>
 
+  <section id="model" aria-label="Kokoro model">
+    <div class="txt"><b>Kokoro voices</b><span id="m-note"></span></div>
+    <button id="m-btn" class="primary">Download model</button>
+    <div class="prog" id="m-bar" hidden><i></i></div>
+  </section>
+
   <div class="filters">
     <div class="chips" id="chips">
-      <button class="chip" data-engine="all" aria-pressed="true">All voices</button>
+      <button class="chip" data-engine="all" aria-pressed="true">All</button>
       <button class="chip" data-engine="kokoro" aria-pressed="false">Kokoro</button>
       <button class="chip" data-engine="piper" aria-pressed="false">Piper</button>
       <button class="chip" data-engine="browser" aria-pressed="false">This device</button>
@@ -108,18 +144,17 @@ select{font:inherit;background:var(--panel);color:var(--ink);border:2px solid va
 
 <script type="module">
 const $ = s => document.querySelector(s);
-const SAMPLE = "Hello! This is how I sound. Would you like to use this voice?";
-const ENGINE_LABEL = { kokoro: 'Kokoro', piper: 'Piper', browser: 'Device' };
-const ENGINE_ORDER = { kokoro: 0, piper: 1, browser: 2 };
-const state = { voices: [], engine: 'all', lang: 'all', picked: null, playing: null };
+const SAMPLE = "Hello, this is how I sound.";
+const LABEL = { kokoro: 'Kokoro', piper: 'Piper', browser: 'Device' };
+const ORDER = { kokoro: 0, piper: 1, browser: 2 };
+const state = { voices: [], engine: 'all', lang: 'all', picked: null, playing: null, speed: 1, pitch: 1 };
 const rows = new Map();
 const sampleCache = new Map();
-let current = null;
+let current = null, busy = false, outUrl = null;
 
 const LANG = new Intl.DisplayNames(['en'], { type: 'language' });
 const langName = c => { try { return LANG.of(c.replace('_', '-')); } catch { return c; } };
 const setStatus = (msg, err = false) => { const s = $('#status'); s.textContent = msg; s.className = err ? 'err' : ''; };
-const tick = () => new Promise(r => setTimeout(r, 30));
 
 /* ---------- helpers ---------- */
 function splitText(t, max = 260) {
@@ -163,81 +198,152 @@ function playUrl(url) {
   });
 }
 
-/* ---------- engines ---------- */
-const engines = {
-  kokoro: {
-    tts: null, pending: null,
-    voices() {
-      const ids = {
-        af: ['heart','alloy','aoede','bella','jessica','kore','nicole','nova','river','sarah','sky'],
-        am: ['adam','echo','eric','fenrir','liam','michael','onyx','puck','santa'],
-        bf: ['alice','emma','isabella','lily'],
-        bm: ['daniel','fable','george','lewis'],
-      };
-      const out = [];
-      for (const [p, names] of Object.entries(ids)) for (const n of names) out.push({
-        id: `kokoro:${p}_${n}`, engine: 'kokoro', native: `${p}_${n}`,
-        name: n[0].toUpperCase() + n.slice(1),
-        lang: p[0] === 'a' ? 'en-US' : 'en-GB', extra: p[1] === 'f' ? 'Female' : 'Male',
+/* ---------- Kokoro: runs in a Web Worker so the page never freezes ---------- */
+const WORKER_SRC = String.raw`
+import { KokoroTTS } from 'https://cdn.jsdelivr.net/npm/kokoro-js@1/+esm';
+let tts = null;
+let chain = Promise.resolve();
+const send = (m, t) => self.postMessage(m, t || []);
+async function handle(d) {
+  try {
+    if (d.type === 'load') {
+      tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+        dtype: 'q8', device: 'wasm',
+        progress_callback: function (p) {
+          if (p.status === 'progress' && p.total > 5e6) send({ type: 'progress', pct: p.progress });
+        }
       });
-      return out;
-    },
-    load() {
-      this.pending ??= (async () => {
-        setStatus('Loading Kokoro. First time downloads about 90 MB, then it is cached.');
-        const { KokoroTTS } = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1/+esm');
-        this.tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
-          dtype: 'q8', device: 'wasm',
-          progress_callback: p => {
-            if (p.status === 'progress' && p.total > 5e6) setStatus(`Downloading Kokoro model… ${Math.round(p.progress)}%`);
-          },
-        });
-        setStatus('');
-        return this.tts;
-      })().catch(e => { this.pending = null; throw e; });
-      return this.pending;
-    },
-    async generate(text, v, progress) {
-      const tts = await this.load();
-      const chunks = splitText(text, 260), parts = []; let sr = 24000;
-      for (let i = 0; i < chunks.length; i++) {
-        progress?.(i + 1, chunks.length);
-        await tick();
-        const a = await tts.generate(chunks[i], { voice: v.native });
+      send({ type: 'ready' });
+    } else if (d.type === 'gen') {
+      const parts = []; let sr = 24000;
+      for (let i = 0; i < d.chunks.length; i++) {
+        send({ type: 'chunk', id: d.id, i: i + 1, n: d.chunks.length });
+        const a = await tts.generate(d.chunks[i], { voice: d.voice, speed: d.speed });
         parts.push(a.audio); sr = a.sampling_rate;
       }
-      return wavBlob(parts, sr);
-    },
-  },
+      send({ type: 'done', id: d.id, sr: sr, parts: parts }, parts.map(function (p) { return p.buffer; }));
+    }
+  } catch (e) {
+    send({ type: 'error', id: d.id, message: String((e && e.message) || e) });
+  }
+}
+self.onmessage = function (e) { chain = chain.then(function () { return handle(e.data); }); };
+`;
 
+function setModel(s, pct = 0) {
+  document.body.dataset.kokoro = s;
+  const notes = {
+    idle: 'About 90 MB. Downloads once and is saved in your browser.',
+    downloading: `Downloading… ${Math.round(pct)}%`,
+    preparing: 'Getting ready…',
+    ready: 'Ready.',
+    error: 'Download failed. Check your connection and retry.',
+  };
+  $('#m-note').textContent = notes[s];
+  $('#m-btn').hidden = !(s === 'idle' || s === 'error');
+  $('#m-btn').textContent = s === 'error' ? 'Retry' : 'Download model';
+  const bar = $('#m-bar');
+  bar.hidden = !(s === 'downloading' || s === 'preparing');
+  bar.classList.toggle('indet', s === 'preparing');
+  bar.firstElementChild.style.width = s === 'downloading' ? `${pct}%` : '';
+}
+
+const kokoro = {
+  worker: null, ready: false, readyP: null, res: null, rej: null,
+  jobs: new Map(), nextId: 1, cached: false,
+  spawn() {
+    const url = URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' }));
+    this.worker = new Worker(url, { type: 'module' });
+    this.worker.onmessage = e => this.onmsg(e.data);
+    this.worker.onerror = () => this.fail(new Error('Could not start the Kokoro engine'));
+  },
+  load() {
+    if (this.ready) return Promise.resolve();
+    if (!this.readyP) {
+      this.spawn();
+      setModel(this.cached ? 'preparing' : 'downloading', 0);
+      this.readyP = new Promise((res, rej) => { this.res = res; this.rej = rej; });
+      this.readyP.catch(() => {});
+      this.worker.postMessage({ type: 'load' });
+    }
+    return this.readyP;
+  },
+  onmsg(d) {
+    const job = this.jobs.get(d.id);
+    if (d.type === 'progress') {
+      if (d.pct >= 99.5) setModel('preparing'); else setModel('downloading', d.pct);
+    } else if (d.type === 'ready') {
+      this.ready = true; this.cached = true; setModel('ready'); this.res?.();
+    } else if (d.type === 'chunk') {
+      job?.progress?.(d.i, d.n);
+    } else if (d.type === 'done') {
+      this.jobs.delete(d.id); job?.res(wavBlob(d.parts, d.sr));
+    } else if (d.type === 'error') {
+      if (job) { this.jobs.delete(d.id); job.rej(new Error(d.message)); }
+      else this.fail(new Error(d.message));
+    }
+  },
+  reset() {
+    this.worker?.terminate(); this.worker = null;
+    this.ready = false; this.readyP = null; this.res = null; this.rej = null;
+  },
+  fail(err) {
+    const rej = this.rej, jobs = [...this.jobs.values()];
+    this.jobs.clear(); this.reset(); setModel('error');
+    rej?.(err); jobs.forEach(j => j.rej(err));
+  },
+  cancel() {
+    const jobs = [...this.jobs.values()];
+    this.jobs.clear(); this.reset();
+    jobs.forEach(j => j.rej(new Error('Cancelled')));
+    this.cached = true; this.load().catch(() => {});
+  },
+  async generate(text, v, speed, progress) {
+    await this.load();
+    const id = this.nextId++;
+    return new Promise((res, rej) => {
+      this.jobs.set(id, { res, rej, progress });
+      this.worker.postMessage({ type: 'gen', id, chunks: splitText(text, 260), voice: v.native, speed });
+    });
+  },
+};
+
+async function kokoroCached() {
+  try {
+    for (const name of await caches.keys()) {
+      const c = await caches.open(name);
+      if ((await c.keys()).some(r => /Kokoro-82M-v1\.0-ONNX.*\.onnx/.test(r.url))) return true;
+    }
+  } catch {}
+  return false;
+}
+
+/* ---------- other engines ---------- */
+const engines = {
   piper: {
-    mod: null,
+    mod: null, stored: new Set(),
     async load() {
       this.mod ??= await import('https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web/+esm');
       return this.mod;
     },
-    async voices() {
+    async init() {
       const m = await this.load();
       const raw = await m.voices();
-      const arr = Array.isArray(raw) ? raw : Object.values(raw);
-      return arr
-        .filter(v => !v.quality || ['medium', 'high'].includes(v.quality))
-        .map(v => {
-          const l = v.language || {};
-          return {
-            id: `piper:${v.key}`, engine: 'piper', native: v.key,
-            name: v.name[0].toUpperCase() + v.name.slice(1),
-            lang: (l.code || 'en_US').replace('_', '-'),
-            extra: v.quality,
-            sampleUrl: `https://huggingface.co/rhasspy/piper-voices/resolve/main/${l.family}/${l.code}/${v.name}/${v.quality}/samples/speaker_0.mp3`,
-          };
-        });
+      const keys = new Set((Array.isArray(raw) ? raw : Object.values(raw)).map(v => v.key));
+      try { this.stored = new Set(await m.stored()); } catch {}
+      return keys;
+    },
+    async get(v, onPct) {
+      const m = await this.load();
+      if (this.stored.has(v.native)) return;
+      await m.download(v.native, p => { if (p && p.total) onPct?.(Math.round(p.loaded * 100 / p.total)); });
+      this.stored.add(v.native);
     },
     async generate(text, v) {
+      await this.get(v, p => setStatus(`Downloading voice… ${p}%`));
+      setStatus('Generating…');
       const m = await this.load();
-      setStatus('Downloading this Piper voice (first time only)…');
       const out = await m.predict({ text, voiceId: v.native });
-      setStatus('');
       return out instanceof Blob ? out : new Blob([out], { type: 'audio/wav' });
     },
   },
@@ -246,36 +352,73 @@ const engines = {
     stopFlag: false,
     voices() {
       if (!('speechSynthesis' in window)) return [];
-      const nat = v => /natural|neural|online|google/i.test(v.name);
-      return speechSynthesis.getVoices()
-        .sort((a, b) => nat(b) - nat(a))
-        .map(v => ({
-          id: `browser:${v.voiceURI}`, engine: 'browser', native: v, name: v.name,
-          lang: v.lang.replace('_', '-'), extra: v.localService ? 'offline' : 'online',
-        }));
+      const all = speechSynthesis.getVoices().filter(v => /^(en|hi)/i.test(v.lang));
+      const good = all.filter(v => /natural|neural|online|google/i.test(v.name));
+      const pool = good.length ? good : all;
+      const list = [
+        ...pool.filter(v => /^en/i.test(v.lang)).slice(0, 4),
+        ...pool.filter(v => /^hi/i.test(v.lang)).slice(0, 2),
+      ];
+      return list.map(v => ({
+        id: `browser:${v.voiceURI}`, engine: 'browser', native: v, name: v.name,
+        lang: v.lang.replace('_', '-'), extra: v.localService ? 'offline' : 'online',
+      }));
     },
-    speak(text, v) {
+    speak(text, v, rate, pitch) {
       return new Promise((res, rej) => {
         const u = new SpeechSynthesisUtterance(text);
-        u.voice = v.native; u.lang = v.native.lang;
+        u.voice = v.native; u.lang = v.native.lang; u.rate = rate; u.pitch = pitch;
         u.onend = res;
         u.onerror = e => (e.error === 'interrupted' || e.error === 'canceled') ? res() : rej(new Error(e.error));
         speechSynthesis.speak(u);
       });
     },
-    async say(text, v) {
+    async say(text, v, rate, pitch) {
       this.stopFlag = false;
-      for (const c of splitText(text, 200)) { if (this.stopFlag) break; await this.speak(c, v); }
+      for (const c of splitText(text, 200)) { if (this.stopFlag) break; await this.speak(c, v, rate, pitch); }
     },
   },
 };
 
-/* ---------- voice list ---------- */
+/* ---------- curated voices ---------- */
+const KOKORO_VOICES = [
+  ['af_heart', 'Heart', 'en-US', 'Female'],
+  ['af_bella', 'Bella', 'en-US', 'Female'],
+  ['af_nicole', 'Nicole', 'en-US', 'Female'],
+  ['bf_emma', 'Emma', 'en-GB', 'Female'],
+  ['am_michael', 'Michael', 'en-US', 'Male'],
+  ['am_fenrir', 'Fenrir', 'en-US', 'Male'],
+  ['bm_george', 'George', 'en-GB', 'Male'],
+  ['bm_fable', 'Fable', 'en-GB', 'Male'],
+].map(([k, name, lang, extra]) => ({ id: `kokoro:${k}`, engine: 'kokoro', native: k, name, lang, extra }));
+
+const PIPER_VOICES = [
+  ['en_US-lessac-medium', 'Lessac', 'Female'],
+  ['en_US-ryan-medium', 'Ryan', 'Male'],
+  ['en_GB-alba-medium', 'Alba', 'Female'],
+  ['hi_IN-priyamvada-medium', 'Priyamvada', 'Female'],
+  ['hi_IN-pratham-medium', 'Pratham', 'Male'],
+  ['hi_IN-rohan-medium', 'Rohan', 'Male'],
+].map(([key, name, extra]) => {
+  const [code, vname, quality] = key.split('-');
+  return {
+    id: `piper:${key}`, engine: 'piper', native: key, name, extra,
+    lang: code.replace('_', '-'),
+    sampleUrl: `https://huggingface.co/rhasspy/piper-voices/resolve/main/${code.split('_')[0]}/${code}/${vname}/${quality}/samples/speaker_0.mp3`,
+  };
+});
+
+/* ---------- list ---------- */
 function setVoices(engine, list) {
   state.voices = state.voices.filter(v => v.engine !== engine).concat(list)
-    .sort((a, b) => ENGINE_ORDER[a.engine] - ENGINE_ORDER[b.engine]);
+    .sort((a, b) => ORDER[a.engine] - ORDER[b.engine]);
   if (!state.picked) pick(state.voices.find(v => v.id === 'kokoro:af_heart') || state.voices[0]);
   render();
+}
+
+function subText(v) {
+  const saved = v.engine === 'piper' && engines.piper.stored.has(v.native) ? 'downloaded' : '';
+  return [langName(v.lang), v.extra, saved].filter(Boolean).join(', ');
 }
 
 function render() {
@@ -284,22 +427,27 @@ function render() {
   if (state.lang !== 'all' && !fams.includes(state.lang)) state.lang = 'all';
   const sel = $('#lang');
   sel.replaceChildren(new Option('All languages', 'all'), ...fams.map(f => new Option(langName(f), f)));
-  sel.value = state.lang;
+  sel.value = state.lang; sel.hidden = fams.length < 2;
 
   const shown = byEngine.filter(v => state.lang === 'all' || v.lang.split('-')[0] === state.lang);
   const list = $('#list'); list.replaceChildren(); rows.clear();
   if (!shown.length) {
     const p = document.createElement('p'); p.className = 'empty';
-    p.textContent = 'No voices here yet. Try another language or engine.';
+    p.textContent = 'No voices here. Try another language or engine.';
     list.append(p);
   }
   for (const v of shown) {
     const row = document.createElement('div');
-    row.className = 'row'; row.tabIndex = 0; row.setAttribute('role', 'option');
-    row.innerHTML = '<button class="play" aria-label="Play sample">▶</button><div class="who"><b></b><span></span></div><div class="bars"><i></i><i></i><i></i><i></i></div><em class="tag"></em>';
+    row.className = 'row'; row.tabIndex = 0; row.dataset.engine = v.engine; row.setAttribute('role', 'option');
+    row.innerHTML = '<button class="play" aria-label="Play sample">▶</button><div class="who"><b></b><span></span></div><button class="get" hidden>Download</button><div class="bars"><i></i><i></i><i></i><i></i></div><em class="tag"></em>';
     row.querySelector('b').textContent = v.name;
-    row.querySelector('span').textContent = [langName(v.lang), v.extra].filter(Boolean).join(', ');
-    row.querySelector('.tag').textContent = ENGINE_LABEL[v.engine];
+    row.querySelector('span').textContent = subText(v);
+    row.querySelector('.tag').textContent = LABEL[v.engine];
+    const get = row.querySelector('.get');
+    if (v.engine === 'piper' && !engines.piper.stored.has(v.native)) {
+      get.hidden = false;
+      get.addEventListener('click', e => { e.stopPropagation(); piperGet(v, get); });
+    }
     row.querySelector('.play').addEventListener('click', e => { e.stopPropagation(); pick(v); sample(v); });
     row.addEventListener('click', () => pick(v));
     row.addEventListener('keydown', e => { if (e.key === ' ') { e.preventDefault(); pick(v); sample(v); } });
@@ -310,12 +458,21 @@ function render() {
 
 function pick(v) {
   state.picked = v; if (!v) return;
-  $('#picked').replaceChildren(document.createTextNode(v.name + ' '), Object.assign(document.createElement('small'), { textContent: ENGINE_LABEL[v.engine] }));
-  paintRows();
+  $('#picked').replaceChildren(document.createTextNode(v.name + ' '), Object.assign(document.createElement('small'), { textContent: LABEL[v.engine] }));
+  paintRows(); updateTune();
 }
 
 function paintRows() {
   for (const [id, row] of rows) row.classList.toggle('sel', state.picked?.id === id);
+}
+
+function updateTune() {
+  const v = state.picked;
+  $('#tune').hidden = !v;
+  if (!v) return;
+  $('#speedBox').hidden = v.engine === 'piper';
+  $('#pitchBox').hidden = v.engine !== 'browser';
+  $('#fixed').hidden = v.engine !== 'piper';
 }
 
 function mark(id, mode) {
@@ -325,6 +482,23 @@ function mark(id, mode) {
 }
 
 /* ---------- actions ---------- */
+function needModel() {
+  setStatus('Download the Kokoro model first, using the button above the voice list.', true);
+  const m = $('#model'); m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  m.classList.add('flash'); setTimeout(() => m.classList.remove('flash'), 1500);
+}
+
+async function piperGet(v, btn) {
+  btn.disabled = true; btn.textContent = '0%';
+  try {
+    await engines.piper.get(v, p => { btn.textContent = `${p}%`; });
+    render();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = 'Retry';
+    setStatus(`Download failed: ${e.message}`, true);
+  }
+}
+
 function stopAll() {
   engines.browser.stopFlag = true;
   if ('speechSynthesis' in window) speechSynthesis.cancel();
@@ -333,53 +507,63 @@ function stopAll() {
 }
 
 async function sample(v) {
-  const wasSame = state.playing === v.id;
+  const same = state.playing === v.id;
   stopAll();
-  if (wasSame) return;
+  if (same) return;
+  if (v.engine === 'kokoro') {
+    if (busy) return setStatus('Wait for the current audio to finish, or press Cancel.', true);
+    if (!kokoro.ready && !kokoro.readyP) return needModel();
+  }
   $('#player').pause();
   state.playing = v.id; mark(v.id, 'loading');
   const alive = () => state.playing === v.id;
   try {
     if (v.engine === 'browser') {
-      mark(v.id, 'playing'); await engines.browser.say(SAMPLE, v);
+      mark(v.id, 'playing'); await engines.browser.say(SAMPLE, v, state.speed, state.pitch);
+    } else if (v.engine === 'piper') {
+      try { mark(v.id, 'playing'); await playUrl(v.sampleUrl); return; }
+      catch { if (!alive()) return; mark(v.id, 'loading'); }
+      setStatus('Preparing sample…');
+      const blob = await engines.piper.generate(SAMPLE, v);
+      setStatus(''); if (!alive()) return;
+      mark(v.id, 'playing'); await playUrl(URL.createObjectURL(blob));
     } else {
-      let url = sampleCache.get(v.id);
-      if (!url && v.sampleUrl) {
-        try { mark(v.id, 'playing'); await playUrl(v.sampleUrl); return; }
-        catch { if (!alive()) return; mark(v.id, 'loading'); }
-      }
+      const key = `${v.id}|${state.speed}`;
+      let url = sampleCache.get(key);
       if (!url) {
-        const blob = await engines[v.engine].generate(SAMPLE, v);
-        url = URL.createObjectURL(blob); sampleCache.set(v.id, url);
-        setStatus('');
+        setStatus('Making sample…');
+        url = URL.createObjectURL(await kokoro.generate(SAMPLE, v, state.speed));
+        sampleCache.set(key, url); setStatus('');
       }
       if (!alive()) return;
       mark(v.id, 'playing'); await playUrl(url);
     }
   } catch (e) {
-    setStatus(`Sample failed: ${e.message}`, true);
+    if (e.message !== 'Cancelled') setStatus(`Sample failed: ${e.message}`, true);
   } finally {
     if (alive()) { mark(v.id, ''); state.playing = null; }
   }
 }
 
-let busy = false, outUrl = null;
 async function generate() {
   if (busy) return;
   const text = $('#text').value.trim();
   const v = state.picked;
   if (!text) return setStatus('Type something first.', true);
   if (!v) return setStatus('Pick a voice first.', true);
+  if (v.engine === 'kokoro' && !kokoro.ready && !kokoro.readyP) return needModel();
   stopAll(); $('#player').pause();
-  busy = true; $('#go').disabled = true; $('#stop').hidden = v.engine !== 'browser';
+  busy = true; $('#go').disabled = true; $('#stop').hidden = v.engine === 'piper';
   try {
     if (v.engine === 'browser') {
       setStatus('Speaking. Device voices play live and cannot be saved as a file.');
-      await engines.browser.say(text, v);
+      await engines.browser.say(text, v, state.speed, state.pitch);
       setStatus('');
     } else {
       setStatus('Generating…');
-      const blob = await engines[v.engine].generate(text, v, (i, n) => setStatus(n > 1 ? `Generating part ${i} of ${n}…` : 'Generating…'));
+      const blob = v.engine === 'kokoro'
+        ? await kokoro.generate(text, v, state.speed, (i, n) => setStatus(n > 1 ? `Generating part ${i} of ${n}…` : 'Generating…'))
+        : await engines.piper.generate(text, v);
       if (outUrl) URL.revokeObjectURL(outUrl);
       outUrl = URL.createObjectURL(blob);
       $('#player').src = outUrl; $('#dl').href = outUrl; $('#out').hidden = false;
@@ -387,14 +571,20 @@ async function generate() {
       $('#player').play().catch(() => {});
     }
   } catch (e) {
-    setStatus(`Failed: ${e.message}`, true);
+    setStatus(e.message === 'Cancelled' ? 'Cancelled.' : `Failed: ${e.message}`, e.message !== 'Cancelled');
   } finally {
     busy = false; $('#go').disabled = false; $('#stop').hidden = true;
   }
 }
 
+/* ---------- wiring ---------- */
 $('#go').addEventListener('click', generate);
-$('#stop').addEventListener('click', () => { stopAll(); setStatus(''); });
+$('#stop').addEventListener('click', () => {
+  stopAll();
+  if (busy && state.picked?.engine === 'kokoro') kokoro.cancel();
+  else setStatus('');
+});
+$('#m-btn').addEventListener('click', () => { setStatus(''); kokoro.load().catch(() => {}); });
 $('#text').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); generate(); }
 });
@@ -405,18 +595,31 @@ $('#chips').addEventListener('click', e => {
   render();
 });
 $('#lang').addEventListener('change', e => { state.lang = e.target.value; render(); });
+$('#speed').addEventListener('input', e => { state.speed = +e.target.value; $('#speedOut').textContent = `${state.speed.toFixed(2).replace(/0$/, '')}×`; });
+$('#pitch').addEventListener('input', e => { state.pitch = +e.target.value; $('#pitchOut').textContent = state.pitch.toFixed(2).replace(/0$/, ''); });
 
 /* ---------- boot ---------- */
-setVoices('kokoro', engines.kokoro.voices());
+setVoices('kokoro', KOKORO_VOICES);
+setVoices('piper', PIPER_VOICES);
+setModel('idle');
+
 if ('speechSynthesis' in window) {
   const loadDevice = () => setVoices('browser', engines.browser.voices());
   loadDevice(); speechSynthesis.onvoiceschanged = loadDevice;
 } else {
   document.querySelector('[data-engine=browser]').hidden = true;
 }
-engines.piper.voices()
-  .then(list => setVoices('piper', list))
-  .catch(e => { console.warn('Piper unavailable', e); document.querySelector('[data-engine=piper]').hidden = true; });
+
+// If the Kokoro model was downloaded on an earlier visit, start it quietly in the background.
+kokoroCached().then(yes => { if (yes) { kokoro.cached = true; kokoro.load().catch(() => {}); } });
+
+// Hide Piper voices the library does not offer; mark ones already downloaded.
+engines.piper.init()
+  .then(keys => { setVoices('piper', PIPER_VOICES.filter(v => keys.has(v.native))); })
+  .catch(e => {
+    console.warn('Piper unavailable', e);
+    setVoices('piper', []); document.querySelector('[data-engine=piper]').hidden = true;
+  });
 </script>
 </body>
 </html>
